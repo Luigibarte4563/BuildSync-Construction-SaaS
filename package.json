@@ -1,0 +1,17 @@
+{
+  "name": "buildsync-static",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "BuildSync construction SaaS site with subscription checkout and a Gmail mailer",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "dependencies": {
+    "nodemailer": "^10.1.7"
+  }
+}

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard demo · BuildSync</title>
+    <meta name="description" content="Try the BuildSync project control dashboard: completion metrics, daily logs, site photos and team roles." />
+    <meta name="theme-color" content="#111827" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script type="module" src="js/dashboard.js"></script>
+  </head>
+  <body class="bg-buildcream min-h-screen flex flex-col antialiased selection:bg-buildbronze selection:text-white">
+    <div id="header"></div>
+
+    <main class="flex-grow">
+      <section class="py-10 lg:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between pb-8 border-b border-buildborder mb-8 gap-4">
+            <div>
+              <div class="flex flex-wrap items-center gap-3">
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-builddark tracking-tight">Project control dashboard</h1>
+                <span class="px-3 py-1 bg-amber-100 text-buildbronze text-xs font-bold rounded-full">Public demo</span>
+              </div>
+              <p class="text-gray-600 text-sm mt-1">Welcome back, <span class="font-bold">Project Manager</span>. <span id="activeProjectDisplay">Managing Grand Meridian Tower.</span></p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <button type="button" data-open-log class="px-4 py-2.5 bg-builddark text-white text-sm font-bold rounded-xl shadow-md hover:bg-gray-800 transition"><i class="fa-solid fa-camera mr-2"></i>New daily log</button>
+              <button type="button" data-open-project class="px-4 py-2.5 bg-buildbronze text-white text-sm font-bold rounded-xl shadow-md hover:bg-buildbronzehover transition"><i class="fa-solid fa-plus mr-2"></i>Create new project</button>
+              <a href="index.html" class="px-4 py-2.5 bg-white text-builddark border border-gray-300 text-sm font-bold rounded-xl hover:bg-gray-50 transition">Back to home</a>
+            </div>
+          </div>
+
+          <!-- metrics -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl border border-buildborder shadow-sm">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Overall completion</span>
+              <div class="flex items-baseline justify-between mt-2">
+                <span class="text-3xl font-extrabold text-builddark" id="metricCompletion">78.4%</span>
+                <span class="text-xs text-green-600 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> +4.2% this week</span>
+              </div>
+              <div class="w-full bg-gray-200 h-2 rounded-full mt-4 overflow-hidden"><div id="metricBar" class="bg-buildbronze h-full rounded-full" style="width: 78.4%"></div></div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-buildborder shadow-sm">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Daily logs recorded</span>
+              <div class="flex items-baseline justify-between mt-2">
+                <span class="text-3xl font-extrabold text-builddark" id="metricLogsCount">24</span>
+                <span class="text-xs text-buildbronze font-bold">Synced today</span>
+              </div>
+              <span class="block text-xs text-gray-500 mt-4">Last update: 2 hours ago</span>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-buildborder shadow-sm">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Site photos uploaded</span>
+              <div class="flex items-baseline justify-between mt-2">
+                <span class="text-3xl font-extrabold text-builddark" id="metricPhotosCount">142</span>
+                <span class="text-xs text-buildbronze font-bold">High-res cloud</span>
+              </div>
+              <span class="block text-xs text-gray-500 mt-4">Storage used: 1.4 GB / 50 GB</span>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-buildborder shadow-sm">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Active subscription</span>
+              <div class="flex items-baseline justify-between mt-2">
+                <span class="text-lg font-extrabold text-builddark" id="metricPlanName">No active plan</span>
+                <span class="text-xs text-green-600 font-bold">Demo</span>
+              </div>
+              <span class="block text-xs text-gray-500 mt-4">Demo workspace. <a href="plans.html" class="font-semibold text-buildbronze hover:underline">Choose a plan</a></span>
+            </div>
+          </div>
+
+          <!-- tabs -->
+          <div class="bg-white rounded-2xl border border-buildborder shadow-sm overflow-hidden mb-8">
+            <div class="flex flex-wrap border-b border-buildborder bg-gray-50 px-6 pt-4 gap-x-6">
+              <button type="button" data-tab="logs" id="tabBtn-logs" class="pb-3 text-sm font-bold text-buildbronze border-b-2 border-buildbronze transition">Daily logs &amp; progress</button>
+              <button type="button" data-tab="photos" id="tabBtn-photos" class="pb-3 text-sm font-bold text-gray-500 hover:text-builddark transition">Site photos &amp; media</button>
+              <button type="button" data-tab="team" id="tabBtn-team" class="pb-3 text-sm font-bold text-gray-500 hover:text-builddark transition">Team &amp; roles</button>
+            </div>
+
+            <!-- logs -->
+            <div id="tabContent-logs" class="p-6">
+              <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+                <h2 class="font-bold text-builddark text-lg">Automated completion weights &amp; daily logs</h2>
+                <button type="button" data-open-log class="px-3.5 py-2 bg-builddark text-white text-xs font-bold rounded-lg hover:bg-gray-800 transition">Add log entry</button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-700">
+                  <thead class="bg-gray-100 text-xs uppercase text-gray-600 font-bold">
+                    <tr>
+                      <th class="px-4 py-3 rounded-l-lg">Date</th>
+                      <th class="px-4 py-3">Milestone / subtask</th>
+                      <th class="px-4 py-3">Weight added</th>
+                      <th class="px-4 py-3">Engineer in charge</th>
+                      <th class="px-4 py-3 rounded-r-lg">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="logsTableBody" class="divide-y divide-gray-100">
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-4 py-3 font-medium">Oct 15, 2026</td>
+                      <td class="px-4 py-3">Foundation pouring - Sector 4</td>
+                      <td class="px-4 py-3 font-bold text-buildbronze">+3.5%</td>
+                      <td class="px-4 py-3">Eng. Mateo Reyes</td>
+                      <td class="px-4 py-3"><span class="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Verified</span></td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-4 py-3 font-medium">Oct 14, 2026</td>
+                      <td class="px-4 py-3">Steel framing level 12</td>
+                      <td class="px-4 py-3 font-bold text-buildbronze">+4.1%</td>
+                      <td class="px-4 py-3">Eng. Sarah Jenkins</td>
+                      <td class="px-4 py-3"><span class="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Verified</span></td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-4 py-3 font-medium">Oct 13, 2026</td>
+                      <td class="px-4 py-3">Electrical conduit rough-in</td>
+                      <td class="px-4 py-3 font-bold text-buildbronze">+2.0%</td>
+                      <td class="px-4 py-3">Eng. Rico Tan</td>
+                      <td class="px-4 py-3"><span class="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Verified</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- photos -->
+            <div id="tabContent-photos" class="p-6 hidden">
+              <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+                <h2 class="font-bold text-builddark text-lg">Site progress photo repository</h2>
+                <button type="button" data-open-log class="px-3.5 py-2 bg-buildbronze text-white text-xs font-bold rounded-lg hover:bg-buildbronzehover transition">Upload photo</button>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="photoGalleryGrid">
+                <div class="bg-gray-100 rounded-xl p-3 border border-buildborder">
+                  <div class="h-32 bg-gray-200 rounded-lg grid place-items-center text-gray-400 mb-2"><i class="fa-solid fa-image text-3xl"></i></div>
+                  <span class="block text-xs font-bold text-builddark truncate">Foundation_Pour_04.jpg</span>
+                  <span class="block text-[10px] text-gray-500">Oct 15, 2026 - Geotagged</span>
+                </div>
+                <div class="bg-gray-100 rounded-xl p-3 border border-buildborder">
+                  <div class="h-32 bg-gray-200 rounded-lg grid place-items-center text-gray-400 mb-2"><i class="fa-solid fa-image text-3xl"></i></div>
+                  <span class="block text-xs font-bold text-builddark truncate">Steel_Framing_12.jpg</span>
+                  <span class="block text-[10px] text-gray-500">Oct 14, 2026 - Geotagged</span>
+                </div>
+                <div class="bg-gray-100 rounded-xl p-3 border border-buildborder">
+                  <div class="h-32 bg-gray-200 rounded-lg grid place-items-center text-gray-400 mb-2"><i class="fa-solid fa-image text-3xl"></i></div>
+                  <span class="block text-xs font-bold text-builddark truncate">Electrical_Rough_In.jpg</span>
+                  <span class="block text-[10px] text-gray-500">Oct 13, 2026 - Geotagged</span>
+                </div>
+                <div class="bg-gray-100 rounded-xl p-3 border border-buildborder">
+                  <div class="h-32 bg-gray-200 rounded-lg grid place-items-center text-gray-400 mb-2"><i class="fa-solid fa-image text-3xl"></i></div>
+                  <span class="block text-xs font-bold text-builddark truncate">Site_Perimeter_Safety.jpg</span>
+                  <span class="block text-[10px] text-gray-500">Oct 12, 2026 - Geotagged</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- team -->
+            <div id="tabContent-team" class="p-6 hidden">
+              <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+                <h2 class="font-bold text-builddark text-lg">Project team &amp; role permissions</h2>
+                <button type="button" data-invite class="px-3.5 py-2 bg-builddark text-white text-xs font-bold rounded-lg hover:bg-gray-800 transition">Invite member</button>
+              </div>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-buildborder">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 text-buildbronze grid place-items-center font-bold">MR</div>
+                    <div><h3 class="font-bold text-sm text-builddark">Mateo Reyes</h3><span class="text-xs text-gray-500">Project Manager / Owner</span></div>
+                  </div>
+                  <span class="px-3 py-1 bg-amber-100 text-buildbronze text-xs font-bold rounded-full">Admin</span>
+                </div>
+                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-buildborder">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 grid place-items-center font-bold">SJ</div>
+                    <div><h3 class="font-bold text-sm text-builddark">Sarah Jenkins</h3><span class="text-xs text-gray-500">Lead Site Engineer</span></div>
+                  </div>
+                  <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">Engineer</span>
+                </div>
+                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-buildborder">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-green-100 text-green-700 grid place-items-center font-bold">RT</div>
+                    <div><h3 class="font-bold text-sm text-builddark">Rico Tan</h3><span class="text-xs text-gray-500">Electrical Specialist</span></div>
+                  </div>
+                  <span class="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-full">Contractor</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-xs text-gray-500">This demo runs entirely in your browser with sample data. Reloading the page resets it.</p>
+        </div>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <!-- daily log modal -->
+    <div id="logModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-gray-100">
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <span class="text-xs font-bold uppercase text-buildbronze">Site progress &amp; media</span>
+            <h2 class="text-2xl font-extrabold text-builddark mt-1">Add daily log entry</h2>
+          </div>
+          <button type="button" data-close="logModal" class="text-gray-400 hover:text-builddark" aria-label="Close"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <form id="logForm" class="space-y-4">
+          <label class="block">
+            <span class="block text-xs font-bold text-gray-700 mb-1">Milestone / subtask description</span>
+            <input type="text" id="logSubtask" required class="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-buildbronze" placeholder="e.g. Wall plastering level 8">
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label class="block">
+              <span class="block text-xs font-bold text-gray-700 mb-1">Completion weight (%)</span>
+              <input type="number" step="0.1" min="0" max="100" id="logWeight" required class="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-buildbronze" placeholder="1.5">
+            </label>
+            <label class="block">
+              <span class="block text-xs font-bold text-gray-700 mb-1">Engineer in charge</span>
+              <input type="text" id="logEngineer" required class="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-buildbronze" placeholder="Eng. Mateo Reyes">
+            </label>
+          </div>
+          <label class="block">
+            <span class="block text-xs font-bold text-gray-700 mb-1">Upload site photo (optional)</span>
+            <input type="file" id="logPhoto" accept="image/*" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm bg-gray-50 text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-buildbronze hover:file:bg-amber-200">
+          </label>
+          <div class="flex gap-3 pt-2">
+            <button type="submit" class="flex-grow py-3.5 bg-buildbronze text-white font-bold rounded-xl hover:bg-buildbronzehover transition">Save &amp; sync daily log</button>
+            <button type="button" data-close="logModal" class="px-6 py-3.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- new project modal -->
+    <div id="newProjectModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-gray-100">
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <span class="text-xs font-bold uppercase text-buildbronze">Construction SaaS portal</span>
+            <h2 class="text-2xl font-extrabold text-builddark mt-1">Create new construction project</h2>
+            <p class="text-xs text-gray-500 mt-1">Set up project details for automated weighting and milestone tracking.</p>
+          </div>
+          <button type="button" data-close="newProjectModal" class="text-gray-400 hover:text-builddark" aria-label="Close"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <form id="newProjectForm" class="space-y-4">
+          <label class="block">
+            <span class="block text-xs font-bold text-gray-700 mb-1">Project name</span>
+            <input type="text" id="newProjName" required class="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-buildbronze" placeholder="e.g. Horizon Sky Tower BGC">
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label class="block">
+              <span class="block text-xs font-bold text-gray-700 mb-1">Project type</span>
+              <select id="newProjType" class="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-buildbronze">
+                <option value="Commercial">Commercial tower</option>
+                <option value="Residential">Residential subdivision</option>
+                <option value="Infrastructure">Infrastructure / highway</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="block text-xs font-bold text-gray-700 mb-1">Target start date</span>
+              <input type="date" id="newProjDate" required class="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-buildbronze">
+            </label>
+          </div>
+          <label class="block">
+            <span class="block text-xs font-bold text-gray-700 mb-1">Lead site engineer</span>
+            <input type="text" id="newProjEngineer" required class="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-buildbronze" placeholder="Eng. Mateo Reyes">
+          </label>
+          <div class="flex gap-3 pt-2">
+            <button type="submit" class="flex-grow py-3.5 bg-buildbronze text-white font-bold rounded-xl hover:bg-buildbronzehover transition shadow-lg">Initialize &amp; launch project</button>
+            <button type="button" data-close="newProjectModal" class="px-6 py-3.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

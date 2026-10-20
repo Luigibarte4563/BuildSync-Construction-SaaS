@@ -1,0 +1,118 @@
+# BuildSync
+
+Website for a construction management SaaS in the Philippines. Plain HTML, CSS and JavaScript, plus one small Node server for the Gmail mailer. No build step.
+
+## Run
+
+```
+npm install
+npm start
+```
+
+Then go to http://localhost:4174. Copy `.env.example` to `.env` first if you want email to actually send: see [Email](#email-gmail).
+
+`npm start` serves the pages and `POST /api/send-email` from one origin, so there is no CORS setup. Running plain `python3 -m http.server 4174` still shows the pages but has no mailer. The same applies to VS Code Live Server on port 5500: checkout will report that the email service is not running. Always use `npm start` when testing email.
+
+## Deploy on Vercel
+
+Import the GitHub repo. Vercel detects `server.js` as the Node server entrypoint and routes every request to it, so it serves the pages and the API. Set these in **Project Settings → Environment Variables**, then redeploy:
+
+`GMAIL_USER`, `GMAIL_APP_PASSWORD`, and optionally `MAIL_FROM_NAME`, `MAIL_REPLY_TO`, `MAIL_BCC`.
+
+`vercel.json` raises the function limit to 30 seconds for SMTP and keeps the static assets in the bundle. If the deployed site asks for a Vercel login, set **Project Settings → Deployment Protection → Vercel Authentication** to **Disabled**. GitHub Pages is static-only, so it cannot send email.
+
+## Pages
+
+- `index.html`: home, services, coverage, work and plan cards
+- `plans.html`: plan comparison and FAQ
+- `cart.html`, `checkout.html`, `success.html`, `refund.html`: subscription flow
+- `dashboard.html`: public dashboard demo with logs, photos and team tabs
+- `css/styles.css`: small custom layer on top of Tailwind
+- `js/data.js`: plans and prices
+- `js/cart.js`: cart saved in localStorage
+- `js/layout.js`: header, footer and cart drawer
+- `js/mailer.js`: reusable `sendEmail()` client
+- `js/refund.js`: refund request form
+- `js/refund-data.js`: order details encoded in the refund link
+- `js/dashboard.js`: dashboard demo logic
+- `lib/mailer.js`: validation, rate limit and Gmail SMTP
+- `server.js`: static server + API endpoint; local `npm start` and the Vercel entrypoint
+
+Prices exclude 12% VAT, which is added at checkout. Checkout payment is still a demo. No real payment is made; the confirmation email is real. The dashboard demo runs in the browser and resets on reload.
+
+## Email (Gmail)
+
+Checkout sends a subscription confirmation to the customer's own address and a separate owner copy to `GMAIL_USER` (plus `MAIL_BCC` if set), in parallel. If Gmail does not accept the buyer's address, the order still completes, the API returns `buyerEmailFailed: true`, and the success page asks the buyer to check the address or contact us. If the owner copy fails it is retried once; if it still fails, checkout stays on the page and shows an error. Both copies include a Request a refund button; the link carries a compact copy of the order, so the refund page shows the receipt on any device. Submitting the form emails the request to the buyer and the owner copy. Credentials live only in `.env` on the server and never reach the browser. One dependency: `nodemailer`.
+
+### 1. Configure Gmail securely
+
+1. Turn on **2-Step Verification**: myaccount.google.com → Security.
+2. Open **App passwords** (same Security page), pick app "Mail", generate one.
+3. Google shows 16 characters, usually as four groups of four. Copy it exactly, spaces allowed.
+4. Create `.env` and fill it in:
+
+   ```
+   copy .env.example .env
+   ```
+
+| Variable | Required | Meaning |
+| --- | --- | --- |
+| `GMAIL_USER` | yes | full Gmail address, e.g. `you@gmail.com`. Also the only allowed sender. |
+| `GMAIL_APP_PASSWORD` | yes | the 16-character App Password |
+| `MAIL_FROM_NAME` | no | display name, defaults to `BuildSync` |
+| `MAIL_REPLY_TO` | no | where replies go, e.g. `support@buildsync.ph` |
+| `MAIL_BCC` | no | extra address that gets an owner copy of every subscription email |
+| `PORT` | no | defaults to `4174` |
+
+Never put your normal Google account password in `.env`, and never ask anyone for theirs.
+
+5. Restart the server after any change: `npm start`. There is no hot reload.
+
+If `GMAIL_USER` or `GMAIL_APP_PASSWORD` is missing the site still runs and the endpoint answers `503 Email service is not configured.` It does not pretend to send.
+
+### 2. Limits and honest caveats
+
+- Free Gmail allows roughly 500 messages a day, and Google can temporarily block an account that looks abusive. That limit is Google's; there is no "unlimited" setting.
+- There are **no automatic retries** for the buyer copy, so a failed send never silently becomes a duplicate email.
+- The mailer only reports what Gmail accepted. It cannot know whether the email reached an inbox or landed in spam.
+- The refund link contains base64 order data. It is convenient, not tamper-proof.
+
+### 3. Abuse protection
+
+The checkout is public and anonymous, so the endpoint is protected by:
+
+- a hidden honeypot field that bots fill in (the server then answers success and sends nothing);
+- a minimum fill time of 3 seconds (`startedAt`, checked server-side);
+- a per-IP limit of 5 sends per 10 minutes;
+- strict single-recipient validation (the optional `MAIL_BCC` comes from the server, never from the request), a 64 KB payload cap and a 20 000-character message cap;
+- `Content-Type: application/json` required, which also blocks cross-site form posts;
+- a sender address pinned to `GMAIL_USER`, so the form can never send as someone else.
+
+These raise the cost for bots but are **not authentication**: someone calling the API directly can forge `startedAt` and change IP. For a genuinely public, high-traffic site the real fix is user accounts plus a captcha, or moving sending behind a staff-only admin page. Do not promise otherwise.
+
+### 4. Test the endpoint
+
+```powershell
+curl.exe -X POST http://localhost:4174/api/send-email -H "Content-Type: application/json" -d "{\"to\":\"you@gmail.com\",\"subject\":\"Test Email\",\"message\":\"Hello! This is a test email.\",\"startedAt\":0}"
+```
+
+`startedAt: 0` skips the human-timing check so the command works; the real form sends its render time.
+
+Expected success: `{"success":true,"message":"Email accepted for sending."}`
+
+### 5. Testing checklist
+
+1. **Valid email** — full checkout; the confirmation arrives at the address typed in the form, and the owner copy arrives at `GMAIL_USER`.
+2. **Invalid recipient** — `not-an-email`; the browser blocks it, and the API returns `400` if you post it directly.
+3. **Empty subject/message** — API returns `400` with a specific message.
+4. **Wrong credentials** — change `GMAIL_APP_PASSWORD` in `.env`, restart; the browser shows a generic error, the terminal logs `EAUTH` plus a hint.
+5. **SMTP unreachable** — disconnect the network or block port 465; the send fails with `502` after about 10 s.
+6. **Rate limit** — post 6 valid requests within 10 minutes; the 6th returns `429` and the browser keeps the cart.
+7. **HTML escaping** — send `<img src=x onerror=alert(1)>` as the message; it arrives as visible text, no alert.
+8. **No secrets in the browser** — DevTools → Sources/Network: only `/api/send-email`, never SMTP details or `.env`.
+9. **Unauthorized use** — from another origin, a `fetch` with a JSON content type triggers a CORS preflight and fails; a plain form post is rejected by the JSON-only check. Requesting `/.env` returns `404`.
+10. **Frontend states** — the Activate button disables while sending, errors appear under it, success redirects to `success.html`.
+
+Run the automated checks with `npm test`.
+
+Skipped on purpose: **multiple recipients**, **CORS** (same-origin), **login** (the site has no accounts), **real payments**.

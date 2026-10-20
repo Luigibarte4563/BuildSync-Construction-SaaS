@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Plans &amp; pricing · BuildSync</title>
+    <meta name="description" content="Starter, Professional and Enterprise monthly plans for construction teams. Compare projects, seats, storage and support." />
+    <meta name="theme-color" content="#111827" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script type="module" src="js/plans.js"></script>
+  </head>
+  <body class="bg-buildcream min-h-screen flex flex-col antialiased selection:bg-buildbronze selection:text-white">
+    <div id="header"></div>
+
+    <main class="flex-grow">
+      <section class="py-16 sm:py-20 bg-gradient-to-b from-white to-gray-100 border-b border-buildborder">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <span data-reveal class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200/60 text-buildbronze text-xs font-bold uppercase tracking-wider"><i class="fa-solid fa-tags"></i><span>Plans &amp; pricing</span></span>
+          <h1 data-reveal data-delay="60" class="text-4xl sm:text-5xl font-extrabold text-builddark tracking-tight mt-5">One workspace, three levels of scale</h1>
+          <p data-reveal data-delay="120" class="text-gray-600 max-w-2xl mx-auto mt-4 leading-relaxed">Every plan includes daily logs, site photos and the project dashboard. Pick the project and seat limits your team needs. Prices are per workspace per month, excluding 12% VAT.</p>
+        </div>
+      </section>
+
+      <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div id="plans-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch"></div>
+        </div>
+      </section>
+
+      <section class="pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div data-reveal class="bg-white rounded-3xl border border-buildborder shadow-sm p-6 sm:p-8">
+            <h2 class="text-2xl font-extrabold text-builddark mb-6">Compare plans</h2>
+            <div id="compare" class="overflow-x-auto"></div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-14">
+            <div data-reveal>
+              <h2 class="text-2xl font-extrabold text-builddark">Frequently asked questions</h2>
+              <p class="text-gray-600 text-sm mt-2 leading-relaxed">Still unsure which plan fits? Email <a href="mailto:support@buildsync.ph" class="font-semibold text-buildbronze hover:underline">support@buildsync.ph</a>.</p>
+            </div>
+            <div class="lg:col-span-2 divide-y divide-buildborder bg-white rounded-3xl border border-buildborder shadow-sm px-6">
+              <details class="group py-5" data-reveal>
+                <summary class="flex items-center justify-between gap-4 font-bold text-builddark">Can I change plans later?<span class="text-buildbronze transition group-open:rotate-45"><i class="fa-solid fa-plus"></i></span></summary>
+                <p class="text-sm text-gray-600 leading-relaxed mt-3">Yes. Upgrade or downgrade at any time. The difference is prorated on your next monthly bill.</p>
+              </details>
+              <details class="group py-5" data-reveal data-delay="50">
+                <summary class="flex items-center justify-between gap-4 font-bold text-builddark">How do I pay?<span class="text-buildbronze transition group-open:rotate-45"><i class="fa-solid fa-plus"></i></span></summary>
+                <p class="text-sm text-gray-600 leading-relaxed mt-3">GCash, Maya, BDO, BPI, Metrobank, Landbank, Visa or Mastercard. This demo takes no real payment; only the confirmation email is real.</p>
+              </details>
+              <details class="group py-5" data-reveal data-delay="100">
+                <summary class="flex items-center justify-between gap-4 font-bold text-builddark">Is there a lock-in contract?<span class="text-buildbronze transition group-open:rotate-45"><i class="fa-solid fa-plus"></i></span></summary>
+                <p class="text-sm text-gray-600 leading-relaxed mt-3">No. Plans renew monthly and you can cancel whenever you like. Cancel within 7 days of payment and 80% is refunded; a 20% cancellation fee applies.</p>
+              </details>
+              <details class="group py-5" data-reveal data-delay="150">
+                <summary class="flex items-center justify-between gap-4 font-bold text-builddark">Is my project data secure?<span class="text-buildbronze transition group-open:rotate-45"><i class="fa-solid fa-plus"></i></span></summary>
+                <p class="text-sm text-gray-600 leading-relaxed mt-3">Uploads use 256-bit SSL encryption, and access is limited to the roles you assign. We follow the Philippine Data Privacy Act.</p>
+              </details>
+              <details class="group py-5" data-reveal data-delay="200">
+                <summary class="flex items-center justify-between gap-4 font-bold text-builddark">What is included in the dashboard demo?<span class="text-buildbronze transition group-open:rotate-45"><i class="fa-solid fa-plus"></i></span></summary>
+                <p class="text-sm text-gray-600 leading-relaxed mt-3">The public demo shows project metrics, daily logs, photo uploads and team roles with sample data. It runs in your browser and resets when you reload.</p>
+              </details>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-16 bg-white border-t border-buildborder">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="bg-builddark rounded-3xl p-10 sm:p-14 text-center relative overflow-hidden" data-reveal>
+            <div class="absolute -right-8 -bottom-8 text-9xl text-white/5"><i class="fa-solid fa-cubes"></i></div>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Start with the plan that fits today</h2>
+            <p class="text-gray-300 mt-3 max-w-2xl mx-auto">Change plans whenever your team grows. Checkout is a demo, but your subscription confirmation email is real.</p>
+            <a href="cart.html" class="inline-block mt-8 px-8 py-4 bg-buildbronze text-white font-bold rounded-xl hover:bg-buildbronzehover transition">Review your cart</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+  </body>
+</html>
