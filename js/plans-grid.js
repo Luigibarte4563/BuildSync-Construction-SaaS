@@ -24,7 +24,7 @@ export function renderPlans(el) {
             )
             .join("")}
         </ul>
-        <button type="button" data-add="${plan.id}" class="mt-8 w-full py-3.5 rounded-xl text-white text-sm font-bold transition shadow-lg ${tone.button}">
+        <button type="button" data-add="${plan.id}" class="btn-add mt-8 w-full py-3.5 rounded-xl text-white text-sm font-bold transition shadow-lg ${tone.button}">
           <i class="fa-solid fa-cart-plus mr-2"></i>Add to cart
         </button>
       </article>

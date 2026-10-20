@@ -1,4 +1,4 @@
-import { formatPHP } from "./data.js";
+import { formatPHP, getPlan } from "./data.js";
 import * as cart from "./cart.js";
 
 const LINKS = [
@@ -169,7 +169,7 @@ function drawerBody() {
 function drawer() {
   return `<div class="drawer fixed inset-0 z-50">
     <button type="button" class="drawer-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm" data-close-cart aria-label="Close cart"></button>
-    <aside class="drawer-panel absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col" role="dialog" aria-modal="true" aria-label="Your cart">
+    <aside class="drawer-panel absolute left-0 right-0 bottom-0 w-full bg-white shadow-2xl flex flex-col" role="dialog" aria-modal="true" aria-label="Your cart">
       <div class="flex items-center justify-between px-6 h-20 border-b border-buildborder">
         <h2 class="text-lg font-extrabold text-builddark">Your cart</h2>
         <button type="button" class="w-10 h-10 grid place-items-center rounded-xl text-gray-500 hover:bg-gray-100 transition" data-close-cart aria-label="Close cart"><i class="fa-solid fa-xmark"></i></button>
@@ -189,7 +189,8 @@ function modal() {
       <p id="siteModalBody" class="text-gray-600 text-sm leading-relaxed mb-6"></p>
       <div class="flex justify-end"><button type="button" data-close-modal class="px-5 py-2.5 bg-builddark text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition">OK</button></div>
     </div>
-  </div>`;
+  </div>
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>`;
 }
 
 export function showNotice(title, message, iconClass = "fa-bell") {
@@ -200,6 +201,34 @@ export function showNotice(title, message, iconClass = "fa-bell") {
   document.getElementById("siteModalIcon").innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
   modalEl.classList.remove("hidden");
   modalEl.classList.add("flex");
+}
+
+export function showToast(title, message, type = "success") {
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <div class="toast-icon"><i class="fa-solid ${type === "success" ? "fa-check" : "fa-info-circle"}"></i></div>
+    <div class="toast-content">
+      <div class="toast-title">${title}</div>
+      <div class="toast-message">${message}</div>
+    </div>
+  `;
+  container.appendChild(toast);
+
+  // Force reflow then show
+  requestAnimationFrame(() => toast.classList.add("show"));
+
+  const dismiss = () => {
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+    toast.addEventListener("transitionend", () => toast.remove(), { once: true });
+  };
+
+  setTimeout(dismiss, 3500);
+  toast.addEventListener("click", dismiss);
 }
 
 function closeNotice() {
@@ -259,10 +288,31 @@ document.addEventListener("click", (e) => {
   // add to cart buttons
   const addBtn = e.target.closest("[data-add]");
   if (addBtn) {
-    cart.add(addBtn.dataset.add);
-    const original = addBtn.innerHTML;
-    addBtn.innerHTML = `<i class="fa-solid fa-check mr-2"></i>Added to cart`;
-    setTimeout(() => (addBtn.innerHTML = original), 1400);
+    const planId = addBtn.dataset.add;
+    const plan = getPlan(planId);
+    cart.add(planId);
+
+    // Button success feedback
+    addBtn.classList.add("btn-add", "success");
+    const originalHTML = addBtn.innerHTML;
+    addBtn.innerHTML = `<i class="fa-solid fa-check mr-2"></i>Added`;
+    setTimeout(() => {
+      addBtn.classList.remove("success");
+      addBtn.innerHTML = originalHTML;
+    }, 1200);
+
+    // Cart icon pulse
+    const cartIcon = document.querySelector("[data-open-cart] .fa-bag-shopping");
+    if (cartIcon) {
+      cartIcon.classList.add("cart-icon", "pulse");
+      setTimeout(() => cartIcon.classList.remove("pulse"), 400);
+    }
+
+    // Toast notification
+    const planName = plan?.name || "Plan";
+    showToast("Added to cart", `${planName} added — ready to checkout`, "success");
+
+    // Open drawer after brief delay
     setTimeout(() => openCart(true), 350);
   }
 });
