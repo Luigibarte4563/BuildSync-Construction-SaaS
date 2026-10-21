@@ -24,6 +24,8 @@ const PAYMENT_GROUPS = [
     methods: [
       { id: "bdo", badge: "BDO", label: "BDO", hint: "Transfer to BuildSync's BDO account" },
       { id: "bpi", badge: "BPI", label: "BPI", hint: "Transfer to BuildSync's BPI account" },
+      { id: "metrobank", badge: "MB", label: "Metrobank", hint: "Transfer to BuildSync's Metrobank account" },
+      { id: "landbank", badge: "LBP", label: "Landbank", hint: "Transfer to BuildSync's Landbank account" },
     ],
   },
   {
