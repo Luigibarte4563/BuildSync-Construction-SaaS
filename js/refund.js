@@ -60,12 +60,12 @@ function receiptHTML(order) {
 }
 
 function requestMessage({ reference, email, reason }) {
-  const lines = [`Refund request for subscription ${reference}.`];
+  const lines = [`A customer asked to end subscription ${reference} and claim the refund below.`];
 
   if (order) {
     lines.push(
       "",
-      "Plans:",
+      "Subscribed plans:",
       ...order.items
         .filter((item) => item && typeof item === "object")
         .map((item) => {
@@ -87,7 +87,7 @@ function requestMessage({ reference, email, reason }) {
     `Contact email: ${email}`,
     `Reason: ${reason || "Not provided"}`,
     "",
-    "We'll review the request and reply within 1 business day.",
+    "Our billing team reviews it and replies within 1 business day.",
   );
   return lines.join("\n");
 }
@@ -107,7 +107,7 @@ app.innerHTML = `<section class="py-12 lg:py-16"><div class="max-w-7xl mx-auto p
         </div>
         <div class="space-y-4">
           ${order ? "" : `<label class="block"><span class="block text-xs font-bold text-gray-700 mb-1.5">Subscription reference</span><input class="${INPUT}" name="ref" required maxlength="60" placeholder="BS-ABC123"></label>`}
-          <label class="block"><span class="block text-xs font-bold text-gray-700 mb-1.5">Email used for the subscription</span><input class="${INPUT}" name="email" type="email" required autocomplete="email" placeholder="juan@company.ph"></label>
+          <label class="block"><span class="block text-xs font-bold text-gray-700 mb-1.5">Email used for the subscription</span><input class="${INPUT}" name="email" type="email" required autocomplete="email" placeholder="andrea@northgate.ph"></label>
           <label class="block"><span class="block text-xs font-bold text-gray-700 mb-1.5">Reason for refund</span><select class="${INPUT}" name="reason" required>
             <option value="" disabled selected>Select a reason…</option>
             <option>Project ended</option>
@@ -126,7 +126,7 @@ app.innerHTML = `<section class="py-12 lg:py-16"><div class="max-w-7xl mx-auto p
     </div>
     <aside class="bg-white rounded-3xl border border-buildborder shadow-sm p-6">
       <h2 class="text-lg font-extrabold text-builddark mb-3">Refund policy</h2>
-      <p class="text-sm text-gray-600 leading-relaxed">Cancel within 7 days of payment. A 20% cancellation fee applies; you get 80% back. Our team reviews every request and replies within 1 business day.</p>
+      <p class="text-sm text-gray-600 leading-relaxed">Cancel within 7 days of the first payment and 80% is refunded; the 20% fee covers onboarding. A billing specialist replies within 1 business day.</p>
     </aside>
   </form>
 </div></section>`;

@@ -6,62 +6,65 @@ import { encodeOrder } from "./refund-data.js";
 
 const PAYMENT_GROUPS = [
   {
-    title: "E-Wallet",
-    methods: [
-      { id: "gcash", badge: "G", label: "GCash", hint: "Pay with your GCash wallet" },
-      { id: "maya", badge: "M", label: "Maya", hint: "Pay with your Maya wallet" },
-    ],
-  },
-  {
-    title: "Online banking",
-    methods: [
-      { id: "bdo", badge: "BDO", label: "BDO", hint: "BDO Unibank" },
-      { id: "bpi", badge: "BPI", label: "BPI", hint: "Bank of the Philippine Islands" },
-      { id: "metrobank", badge: "MB", label: "Metrobank", hint: "Metropolitan Bank & Trust" },
-      { id: "landbank", badge: "LBP", label: "Landbank", hint: "Land Bank of the Philippines" },
-    ],
-  },
-  {
     title: "Debit or credit card",
     methods: [
-      { id: "debit", badge: "DR", label: "Debit card", hint: "Pay from your bank account" },
-      { id: "credit", badge: "CR", label: "Credit card", hint: "Pay with your credit line" },
+      { id: "credit", badge: "CR", label: "Credit card", hint: "Visa, Mastercard or JCB" },
+      { id: "debit", badge: "DR", label: "Debit card", hint: "Charged from your bank account" },
     ],
+  },
+  {
+    title: "E-wallet",
+    methods: [
+      { id: "gcash", badge: "G", label: "GCash", hint: "Pay from your GCash wallet" },
+      { id: "maya", badge: "M", label: "Maya", hint: "Pay from your Maya wallet" },
+    ],
+  },
+  {
+    title: "Bank transfer",
+    methods: [
+      { id: "bdo", badge: "BDO", label: "BDO", hint: "Transfer to BuildSync's BDO account" },
+      { id: "bpi", badge: "BPI", label: "BPI", hint: "Transfer to BuildSync's BPI account" },
+    ],
+  },
+  {
+    title: "Invoice",
+    methods: [{ id: "po", badge: "PO", label: "Invoice / PO (net 30)", hint: "For teams paying by purchase order" }],
   },
 ];
 
 const METHODS = PAYMENT_GROUPS.flatMap((group) => group.methods.map((method) => ({ ...method, group: group.title })));
 
-const REGIONS = ["Metro Manila (NCR)", "Luzon (outside NCR)", "Visayas", "Mindanao"];
+const REGIONS = ["Metro Manila (NCR)", "Luzon (outside NCR)", "Visayas", "Mindanao", "Outside the Philippines"];
 const PH_MOBILE = "^(\\+?63|0)9\\d{2}\\s?\\d{3}\\s?\\d{4}$";
 const INPUT = "w-full px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-buildbronze";
 const app = document.getElementById("app");
 const items = cart.lines();
-
-const isoDate = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-const today = new Date();
 const field = (label, input, cls = "") =>
   `<label class="block ${cls}"><span class="block text-xs font-bold text-gray-700 mb-1.5">${label}</span>${input}</label>`;
 
 // plain-text body of the confirmation email; the server escapes it and wraps it in the HTML template
 function orderMessage(data, method, items, t, orderId) {
   const get = (key) => String(data.get(key) || "").trim();
-  const firstName = get("name").split(/\s+/)[0] || "there";
-  const rawDate = get("date");
-  const startDate = rawDate
-    ? new Date(`${rawDate}T00:00:00`).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })
-    : "Not set";
+  const firstName = get("owner_name").split(/\s+/)[0] || "there";
   const lines = [
-    `Thank you for subscribing, ${firstName}. We've received your details and will activate your workspace within 1 business day.`,
+    `Thanks for subscribing, ${firstName}. Your BuildSync setup is already moving:`,
+    "",
+    "1. We verify your billing details today.",
+    "2. Your workspace activates within 1 business day, with seats for the whole team.",
+    "3. The first invoice and receipt land in this inbox.",
     "",
     `Subscription reference: ${orderId}`,
-    `Preferred start date: ${startDate}`,
-    `Billing address: ${get("address")}`,
-    `Region: ${get("region")}`,
-    `Contact: ${get("name")}`,
-    get("company") ? `Company: ${get("company")}` : null,
-    `Email: ${get("email")}`,
-    `Phone: ${get("phone")}`,
+    `Billing cycle: ${get("billing_cycle")}`,
+    `Billing entity: ${get("billing_entity")}`,
+    get("tin") ? `TIN / VAT number: ${get("tin")}` : null,
+    `Billing address: ${get("billing_address")}`,
+    `Billing region: ${get("billing_region")}`,
+    `Seats needed: ${get("seats")}`,
+    get("workspace") ? `Workspace name: ${get("workspace")}` : null,
+    `Contact: ${get("owner_name")}`,
+    `Company: ${get("org_name")}`,
+    `Email: ${get("billing_email")}`,
+    `Phone: ${get("owner_phone")}`,
     `Payment method: ${method ? `${method.group} - ${method.label}` : "Not selected"}`,
     "",
     "Plans",
@@ -69,11 +72,11 @@ function orderMessage(data, method, items, t, orderId) {
     "",
     `Subtotal: ${formatPHP(t.subtotal)}`,
     `VAT (12%): ${formatPHP(t.vat)}`,
-    `Total: ${formatPHP(t.total)}`,
+    `Total due today: ${formatPHP(t.total)}`,
     "",
-    `Refundable: cancel within 7 days and get ${formatPHP(t.total * 0.8)} back (a 20% cancellation fee of ${formatPHP(t.total * 0.2)} applies).`,
+    `Your plan continues each ${(get("billing_cycle") || "month").toLowerCase()} until you cancel. Cancel within 7 days of this payment and ${formatPHP(t.total * 0.8)} comes back — the ${formatPHP(t.total * 0.2)} fee covers onboarding.`,
     "",
-    "If anything is wrong, reply to this email or call +63 (2) 8888-5555.",
+    "Need anything? Reply to this email or call +63 (2) 8888-5555, Mon–Fri 9am–6pm.",
   ];
   return lines.filter((line) => line !== null).join("\n");
 }
@@ -81,8 +84,8 @@ function orderMessage(data, method, items, t, orderId) {
 function emptyView() {
   app.innerHTML = `<section class="py-20"><div class="max-w-2xl mx-auto px-4 text-center">
     <div class="w-16 h-16 rounded-2xl bg-amber-50 text-buildbronze grid place-items-center text-2xl mx-auto mb-4"><i class="fa-solid fa-bag-shopping"></i></div>
-    <h1 class="text-3xl font-extrabold text-builddark">Your cart is empty</h1>
-    <p class="text-gray-500 mt-2 mb-6">Add a plan before checking out.</p>
+    <h1 class="text-3xl font-extrabold text-builddark">No plan selected</h1>
+    <p class="text-gray-500 mt-2 mb-6">Pick a plan to start your subscription.</p>
     <a href="plans.html" class="inline-block px-6 py-3 bg-buildbronze text-white text-sm font-bold rounded-xl hover:bg-buildbronzehover transition">Browse plans</a>
   </div></section>`;
 }
@@ -95,9 +98,9 @@ function formView() {
 
   app.innerHTML = `<section class="py-12 lg:py-16"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="mb-8">
-      <a href="cart.html" class="text-sm font-semibold text-gray-500 hover:text-buildbronze transition">← Back to cart</a>
-      <h1 class="text-3xl sm:text-4xl font-extrabold text-builddark tracking-tight mt-2">Checkout</h1>
-      <p class="text-gray-600 mt-1">Your subscription confirmation is emailed as soon as the form is accepted.</p>
+      <a href="cart.html" class="text-sm font-semibold text-gray-500 hover:text-buildbronze transition">← Back to subscription</a>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-builddark tracking-tight mt-2">Start your subscription</h1>
+      <p class="text-gray-600 mt-1">The confirmation email is sent the moment this form is accepted.</p>
     </div>
 
     <form id="checkout" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -105,13 +108,15 @@ function formView() {
         <fieldset class="bg-white rounded-3xl border border-buildborder shadow-sm p-6 sm:p-8">
           <div class="flex items-center gap-3 mb-5">
             <span class="w-8 h-8 rounded-lg bg-amber-100 text-buildbronze grid place-items-center text-xs font-extrabold">01</span>
-            <h2 class="text-lg font-extrabold text-builddark">Contact details</h2>
+            <h2 class="text-lg font-extrabold text-builddark">Account owner</h2>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            ${field("Full name", `<input class="${INPUT}" name="name" required autocomplete="name" placeholder="Juan Dela Cruz">`)}
-            ${field("Company (optional)", `<input class="${INPUT}" name="company" autocomplete="organization" placeholder="ABC Builders Inc.">`)}
-            ${field("Work email", `<input class="${INPUT}" name="email" type="email" required autocomplete="email" placeholder="juan@company.ph">`)}
-            ${field("Mobile number", `<input class="${INPUT}" name="phone" type="tel" required autocomplete="tel" placeholder="0917 123 4567" pattern="${PH_MOBILE}" title="PH mobile number, e.g. 0917 123 4567">`)}
+            ${field("Account owner name", `<input class="${INPUT}" name="owner_name" required autocomplete="name" placeholder="Andrea Lim">`)}
+            ${field("Company name", `<input class="${INPUT}" name="org_name" required autocomplete="organization" placeholder="Northgate Engineering">`)}
+            ${field("Work email", `<input class="${INPUT}" name="billing_email" type="email" required autocomplete="email" placeholder="andrea@northgate.ph">`)}
+            ${field("Mobile number", `<input class="${INPUT}" name="owner_phone" type="tel" required autocomplete="tel" placeholder="0995 421 8801" pattern="${PH_MOBILE}" title="PH mobile number, e.g. 0995 421 8801">`)}
+            ${field("Seats needed", `<input class="${INPUT}" name="seats" type="number" min="1" max="200" value="5" required>`)}
+            ${field("Workspace name (optional)", `<input class="${INPUT}" name="workspace" autocomplete="off" placeholder="northgate-hq">`)}
           </div>
         </fieldset>
 
@@ -121,13 +126,18 @@ function formView() {
             <h2 class="text-lg font-extrabold text-builddark">Billing details</h2>
           </div>
           <div class="grid grid-cols-1 gap-4">
-            ${field("Billing address", `<input class="${INPUT}" name="address" required placeholder="Unit 12, 4th Avenue, BGC, Taguig City">`)}
+            ${field("Billing entity", `<input class="${INPUT}" name="billing_entity" required placeholder="Northgate Engineering">`)}
+            ${field("TIN / VAT number (optional)", `<input class="${INPUT}" name="tin" placeholder="000-000-000-000">`)}
+            ${field("Billing address", `<input class="${INPUT}" name="billing_address" required placeholder="8F One Park Drive, BGC, Taguig">`)}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               ${field(
-                "Region",
-                `<select class="${INPUT}" name="region" required><option value="" disabled selected>Select region</option>${REGIONS.map((region) => `<option>${region}</option>`).join("")}</select>`,
+                "Billing region",
+                `<select class="${INPUT}" name="billing_region" required><option value="" disabled selected>Select region</option>${REGIONS.map((region) => `<option>${region}</option>`).join("")}</select>`,
               )}
-              ${field("Preferred start date", `<input class="${INPUT}" name="date" type="date" required min="${isoDate(today)}" value="${isoDate(today)}">`)}
+              ${field(
+                "Billing cycle",
+                `<select class="${INPUT}" name="billing_cycle" required><option>Monthly</option><option>Quarterly</option><option>Annual</option></select>`,
+              )}
             </div>
           </div>
         </fieldset>
@@ -163,7 +173,7 @@ function formView() {
 
       <aside class="lg:sticky lg:top-28">
         <div class="bg-white rounded-3xl border border-buildborder shadow-sm p-6 space-y-5">
-          <h2 class="text-lg font-extrabold text-builddark">Order summary</h2>
+          <h2 class="text-lg font-extrabold text-builddark">Subscription summary</h2>
           <ul class="space-y-3 text-sm">
             ${items
               .map(
@@ -172,11 +182,11 @@ function formView() {
               .join("")}
           </ul>
           ${cart.totalsHTML(sub)}
-          <p class="text-xs text-gray-500 leading-relaxed">Refundable. Cancel within 7 days using the link in your confirmation email. A 20% cancellation fee applies; you get ${formatPHP(t.total * 0.8)} back.</p>
+          <p class="text-xs text-gray-500 leading-relaxed">Cancel within 7 days of the first payment and ${formatPHP(t.total * 0.8)} comes back — the ${formatPHP(t.total * 0.2)} fee covers onboarding.</p>
           <button type="submit" id="pay" class="w-full py-4 bg-buildbronze text-white font-bold rounded-xl hover:bg-buildbronzehover transition shadow-lg shadow-amber-600/20">
-            <i class="fa-solid fa-lock mr-2"></i>Activate — ${formatPHP(t.total)}
+            <i class="fa-solid fa-bolt mr-2"></i>Start subscription — ${formatPHP(t.total)}
           </button>
-          <p class="text-xs text-gray-500 leading-relaxed" id="mail-status" role="status">Your confirmation email is real. Payment is a demo; no card is charged.</p>
+          <p class="text-xs text-gray-500 leading-relaxed" id="mail-status" role="status">Confirmation email is real. Payment is simulated; nothing is charged.</p>
         </div>
       </aside>
     </form>
@@ -213,15 +223,15 @@ function formView() {
     );
 
     pay.disabled = true;
-    pay.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>Processing payment…`;
+    pay.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>Activating your workspace…`;
     paying = true;
 
     let mail;
     try {
       mail = await sendEmail(
         {
-          to: data.get("email"),
-          subject: `Your BuildSync subscription (${orderId})`,
+          to: data.get("billing_email"),
+          subject: `BuildSync subscription ${orderId} — activation in progress`,
           message: orderMessage(data, method, items, t, orderId),
           website: data.get("website") || "",
           cta: { label: "Request a refund", href: refundUrl.href },
@@ -231,7 +241,7 @@ function formView() {
     } catch (err) {
       // no order placed and no redirect, so the customer never sees a false "confirmation"
       status.textContent = `${note} ${err.message}`;
-      pay.innerHTML = `<i class="fa-solid fa-lock mr-2"></i>Activate — ${formatPHP(t.total)}`;
+      pay.innerHTML = `<i class="fa-solid fa-bolt mr-2"></i>Start subscription — ${formatPHP(t.total)}`;
       pay.disabled = false;
       paying = false;
       return;
@@ -241,8 +251,8 @@ function formView() {
     setTimeout(() => {
       cart.placeOrder({
         id: orderId,
-        name: data.get("name"),
-        email: data.get("email"),
+        name: data.get("owner_name"),
+        email: data.get("billing_email"),
         method: method?.label || "Not selected",
         items: items.map((l) => ({ name: l.plan.name, unit: l.plan.unit, qty: l.qty, price: l.plan.price })),
         ...t,

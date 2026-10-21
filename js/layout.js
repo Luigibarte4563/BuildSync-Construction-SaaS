@@ -62,7 +62,7 @@ function header() {
       <div class="flex items-center space-x-2">
         <button type="button" data-open-cart class="relative inline-flex items-center gap-2 px-4 py-2.5 bg-builddark text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition" aria-label="Open cart">
           <i class="fa-solid fa-bag-shopping text-xs"></i>
-          <span class="hidden sm:inline">Cart</span>
+          <span class="hidden sm:inline">Subscription</span>
           <span class="cart-count inline-grid place-items-center min-w-5 h-5 px-1 rounded-full bg-buildbronze text-white text-[10px] font-extrabold">0</span>
         </button>
         <button type="button" data-menu class="md:hidden w-11 h-11 grid place-items-center rounded-xl border border-buildborder text-builddark hover:bg-gray-50 transition" aria-label="Open menu" aria-expanded="false">
@@ -130,8 +130,8 @@ function drawerBody() {
   if (!items.length) {
     return `<div class="h-full flex flex-col items-center justify-center text-center px-6 py-12">
       <div class="w-16 h-16 rounded-2xl bg-amber-50 text-buildbronze grid place-items-center text-2xl mb-4"><i class="fa-solid fa-bag-shopping"></i></div>
-      <p class="font-extrabold text-builddark text-lg">Your cart is empty</p>
-      <p class="text-sm text-gray-500 mt-1 mb-5">Add a plan to get started.</p>
+      <p class="font-extrabold text-builddark text-lg">No plans selected</p>
+      <p class="text-sm text-gray-500 mt-1 mb-5">Pick a plan to start your subscription.</p>
       <a href="plans.html" class="px-6 py-3 bg-buildbronze text-white text-sm font-bold rounded-xl hover:bg-buildbronzehover transition">Browse plans</a>
     </div>`;
   }
@@ -285,7 +285,7 @@ document.addEventListener("click", (e) => {
   }
   if (e.target.closest("[data-close-modal]")) closeNotice();
 
-  // add to cart buttons
+  // add-plan buttons
   const addBtn = e.target.closest("[data-add]");
   if (addBtn) {
     const planId = addBtn.dataset.add;
@@ -301,19 +301,16 @@ document.addEventListener("click", (e) => {
       addBtn.innerHTML = originalHTML;
     }, 1200);
 
-    // Cart icon pulse
+    // Header icon pulse
     const cartIcon = document.querySelector("[data-open-cart] .fa-bag-shopping");
     if (cartIcon) {
       cartIcon.classList.add("cart-icon", "pulse");
       setTimeout(() => cartIcon.classList.remove("pulse"), 400);
     }
 
-    // Toast notification
+    // Toast notification; the drawer stays closed so the plans page keeps its place
     const planName = plan?.name || "Plan";
-    showToast("Added to cart", `${planName} added — ready to checkout`, "success");
-
-    // Open drawer after brief delay
-    setTimeout(() => openCart(true), 350);
+    showToast("Plan added", `${planName} is in your subscription — review any time`, "success");
   }
 });
 
